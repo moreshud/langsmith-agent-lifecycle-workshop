@@ -63,7 +63,8 @@ class SimulationRunner:
             "successful": 0,
             "failed": 0,
             "total_turns": 0,
-            "interrupts_handled": 0
+            "interrupts_handled": 0,
+            "agent_errors": 0
         }
 
     def load_scenarios(self) -> List[Dict]:
@@ -280,11 +281,19 @@ class SimulationRunner:
             # Send follow-up
             logger.debug(f"Sending follow-up query (turn {turn + 2}): {followup_content}")
             input_msg = {"messages": [{"role": "user", "content": followup_content}]}
-            result = await self.sdk_client.runs.wait(
-                thread_id,
-                DEPLOYMENT_GRAPH_NAME,
-                input=input_msg
-            )
+
+            try:
+                result = await self.sdk_client.runs.wait(
+                    thread_id,
+                    DEPLOYMENT_GRAPH_NAME,
+                    input=input_msg
+                )
+            except Exception as e:
+                # Agent may crash on certain queries - log and end conversation gracefully
+                logger.warning(f"Agent error on follow-up turn {turn + 2}: {e}")
+                logger.info(f"Ending conversation early due to agent error after {turn_count} follow-up turns")
+                self.stats["agent_errors"] += 1
+                break
 
             turn_count += 1
             conversation_history.extend([
@@ -405,6 +414,7 @@ Your response (just the customer's message, or CONVERSATION_END):"""
         logger.info(f"Failed: {self.stats['failed']}")
         logger.info(f"Total Turns: {self.stats['total_turns']}")
         logger.info(f"Interrupts Handled: {self.stats['interrupts_handled']}")
+        logger.info(f"Agent Errors (gracefully handled): {self.stats['agent_errors']}")
         avg_turns = self.stats['total_turns'] / max(self.stats['successful'], 1)
         logger.info(f"Avg Turns per Conversation: {avg_turns:.1f}")
         logger.info("=" * 60)
