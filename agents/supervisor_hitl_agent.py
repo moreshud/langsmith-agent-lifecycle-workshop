@@ -168,8 +168,9 @@ def query_router(
 
     # Not already verified - classify query to see if verification is needed
     last_message = state["messages"][-1]
+    model = runtime.context.model if runtime.context is not None else DEFAULT_MODEL
     query_classification = classify_query_intent(
-        last_message.content, model=runtime.context.model
+        last_message.content, model=model
     )
 
     # Route based on classification
@@ -190,7 +191,8 @@ def verify_customer(
     last_message = state["messages"][-1]
 
     # Try to extract email using structured output
-    email_extractor = create_email_extractor(model=runtime.context.model)
+    model = runtime.context.model if runtime.context is not None else DEFAULT_MODEL
+    email_extractor = create_email_extractor(model=model)
     extraction = email_extractor.invoke([last_message])
 
     # If we have an email, attempt to validate it
