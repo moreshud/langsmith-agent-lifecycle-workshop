@@ -160,7 +160,8 @@ class SimulationRunner:
         result = await self.sdk_client.runs.wait(
             thread_id,
             DEPLOYMENT_GRAPH_NAME,
-            input=input_msg
+            input=input_msg,
+            metadata={"scenario_id": scenario["scenario_id"]}
         )
 
         turn_count = 1
@@ -186,7 +187,8 @@ class SimulationRunner:
             result = await self.sdk_client.runs.wait(
                 thread_id,
                 DEPLOYMENT_GRAPH_NAME,
-                command=Command(resume=email_response)
+                command=Command(resume=email_response),
+                metadata={"scenario_id": scenario["scenario_id"]}
             )
             turn_count += 1
 
@@ -218,7 +220,8 @@ class SimulationRunner:
         result = await self.sdk_client.runs.wait(
             thread_id,
             DEPLOYMENT_GRAPH_NAME,
-            input=input_msg
+            input=input_msg,
+            metadata={"scenario_id": scenario["scenario_id"]}
         )
 
         # Continue conversation with follow-ups
@@ -240,7 +243,7 @@ class SimulationRunner:
         self,
         thread_id: str,
         scenario: Dict,
-        initial_response: Dict
+        initial_response: Dict,
     ) -> int:
         """
         Generate and execute follow-up queries based on persona.
@@ -257,6 +260,7 @@ class SimulationRunner:
         turn_count = 0
         persona = scenario["persona"]
         sentiment = persona.get("sentiment", "neutral")
+        customer_email = (scenario.get("customer") or {}).get("email")
 
         # Build conversation history
         conversation_history = [
@@ -275,10 +279,11 @@ class SimulationRunner:
                 persona=persona,
                 conversation_history=conversation_history,
                 turn_number=turn + 2,  # +2 because we already had initial query
-                min_turns=min_turns
+                min_turns=min_turns,
+                customer_email=customer_email
             )
 
-            followup_query = await self.llm.ainvoke(followup_prompt, config={"callbacks": []})
+            followup_query = await self.llm.ainvoke(followup_prompt, config={"run_name": "SimulatedHumanUser"})
             followup_content = followup_query.content.strip()
 
             # Check if persona decides to end conversation
@@ -294,7 +299,8 @@ class SimulationRunner:
                 result = await self.sdk_client.runs.wait(
                     thread_id,
                     DEPLOYMENT_GRAPH_NAME,
-                    input=input_msg
+                    input=input_msg,
+                    metadata={"scenario_id": scenario["scenario_id"]}
                 )
             except Exception as e:
                 # Agent may crash on certain queries - log and end conversation gracefully
@@ -318,7 +324,8 @@ class SimulationRunner:
         persona: Dict,
         conversation_history: List[Dict],
         turn_number: int,
-        min_turns: int = 1
+        min_turns: int = 1,
+        customer_email: str = None
     ) -> str:
         """Build prompt for generating realistic follow-up query."""
         sentiment = persona.get("sentiment", "neutral")
@@ -342,12 +349,14 @@ class SimulationRunner:
 - End naturally after getting sufficient information"""
         }
 
+        email_hint = f"\nIf asked for your email address, provide exactly: {customer_email}" if customer_email else ""
+
         return f"""You are simulating a customer with this profile:
 
 Description: {persona['description']}
 Communication Style: {persona['communication_style']}
 Sentiment: {sentiment}
-Typical Queries: {', '.join(persona['typical_queries'])}
+Typical Queries: {', '.join(persona['typical_queries'])}{email_hint}
 
 Sentiment-Specific Behavior:
 {sentiment_instructions.get(sentiment, sentiment_instructions['neutral'])}

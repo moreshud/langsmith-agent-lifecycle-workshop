@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+
 # ============================================================================
 # Archetype Definitions
 # ============================================================================
@@ -311,7 +312,7 @@ Hint: {archetype.hint}
 
 Your response (just the customer's message):"""
 
-    response = await llm.ainvoke(prompt, config={"callbacks": []})
+    response = await llm.ainvoke(prompt, config={"run_name": "SimulatedHumanUser"})
     return response.content.strip().strip('"').strip("'")
 
 
