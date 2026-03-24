@@ -188,7 +188,8 @@ class SimulationRunner:
                 thread_id,
                 DEPLOYMENT_GRAPH_NAME,
                 command=Command(resume=email_response),
-                metadata={"scenario_id": scenario["scenario_id"]}
+                metadata={"scenario_id": scenario["scenario_id"]},
+                config={"metadata": {"is_interrupt_resume": True}},
             )
             turn_count += 1
 
