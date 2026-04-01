@@ -11,6 +11,8 @@
 # looks organic rather than uniform. Manual dispatch overrides count and mode.
 
 name: Simulate TechHub Traffic
+permissions:
+  contents: read
 
 on:
   schedule:
