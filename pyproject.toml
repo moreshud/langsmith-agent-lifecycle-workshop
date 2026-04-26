@@ -29,6 +29,9 @@ dependencies = [
     # Utilities
     "python-dotenv>=1.0.0",
     "langgraph-cli[inmem]>=0.4.4",
+    # Evaluation
+    "agentevals>=0.0.9",
+    "openevals>=0.0.9",
 ]
 
 [dependency-groups]

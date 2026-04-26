@@ -75,7 +75,7 @@ This workshop consists of three modules that take you from manual tool calling t
 langsmith-agent-lifecycle-workshop/
 ├── workshop_modules/        # Interactive Jupyter notebooks
 │   ├── module_1/            # Agent Development (4 sections)
-│   ├── module_2/            # Evaluation & Improvement (2 sections)
+│   ├── module_2/            # Evaluation & Improvement (3 sections)
 │   └── module_3/            # Deployment & Continuous Improvement (2 sections)
 │
 ├── agents/                  # Reusable agent factory functions

@@ -56,6 +56,12 @@ Learn evaluation-driven development to systematically improve agents.
 - Re-evaluation showing quantitative improvement
 - Composing improved agent with existing system
 
+**Section 3: Advanced Evaluation** (`section_3_advanced_evaluation.ipynb`)
+- Single-step evaluation: unit-testing isolated routing decisions
+- Trajectory evaluation: verifying HITL steps, tool call sequences, and efficiency
+- Run-based evaluators: traversing the LangSmith trace tree to inspect sub-agent tool calls
+- Multi-turn simulation: realistic customer conversations with LLM-simulated users
+
 ---
 
 ## Module 3: Deployment & Continuous Improvement
